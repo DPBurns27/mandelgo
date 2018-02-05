@@ -14,10 +14,10 @@ func main() {
 
     // work out conversion factors for going from the canvas position to the actual imaginary and 
     // real axis values you want
-    var a_min float64 = -3
-    var a_max float64 = 1
-    var b_min float64 = -2
-    var b_max float64 = 2
+    a_min := -3.0
+    a_max := 1.0
+    b_min := -2.0
+    b_max := 2.0
     iCanvasConversion := (a_max - a_min)/float64(size)
     jCanvasConversion := (b_max - b_min)/float64(size)
 
@@ -27,7 +27,7 @@ func main() {
 	    // find the complex representation of the canvas position
 	    a := a_min + float64(i)*iCanvasConversion
 	    b := b_max - float64(j)*jCanvasConversion // this is because y decreases downwards but x increases across
-	    var colour float64 = escapeTest(a,b,20,0.0001)
+	    colour := escapeTest(a,b,10,0.001)
 	    canvas.SetRGB(colour,colour,colour)
 	    canvas.SetPixel(i,j)
 	}
@@ -38,20 +38,26 @@ func main() {
 
 // x,a is the imaginary component, y,b is the real
 func zCubed(x, y, a, b float64) (float64, float64) {
-    var xn float64 = b - 3*x*x*y + y*y*y
-    var yn float64 = a - x*x*x + 3*x*y*y
+    var yn float64 = b - 3*x*x*y + y*y*y
+    var xn float64 = a - x*x*x + 3*x*y*y
     return xn, yn
 }
 
-func escapeTest(a, b float64, maxLoop int, threshHold float64) float64 {
+// x,a is the imaginary component, y,b is the real
+func zSquared(x, y, a, b float64) (float64, float64) {
+    var yn float64 = b - x*x + y*y
+    var xn float64 = a + 2*x*y 
+    return xn, yn
+}
+
+func escapeTest(a, b float64, maxLoop int, threshhold float64) float64 {
     var x float64 = 0
     var y float64 = 0
     for i := 0; i < maxLoop; i++ {
-	x, y = zCubed(x, y, a, b)
+	x, y = zSquared(x, y, a, b)
     }
-    if x*x + y*y < threshHold {
+    if (x*x + y*y) < threshhold {
 	return 0
-    } else {
-	return 1
     }
+    return 1
 }

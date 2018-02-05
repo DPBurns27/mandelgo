@@ -1,11 +1,11 @@
 package main
 
-//import "fmt"
+import "fmt"
 import "math"
 import "github.com/fogleman/gg"
 
 func main() {
-    //fmt.Println(complexFunction(2,3))
+    fmt.Println("Running...")
     size := 1000
     canvas := gg.NewContext(size, size)
     //canvas.DrawCircle(500,500,400)
@@ -25,12 +25,12 @@ func main() {
     // i dont know if i is the horizontal or vertical axis
     // Loop the canvas
     for i := 0; i < size; i++ {
+	cRe := cReMin + float64(i)*reCanvasConversion
 	for j := 0; j < size; j++ {
 	    // find the complex representation of the canvas position
 	    // also need to be careful about how i and j grow across the canvas
-	    cRe := cReMin + float64(i)*reCanvasConversion
 	    cIm := cImMax - float64(j)*imCanvasConversion
-	    colour := escapeTest(cRe, cIm, 20, 0.1)
+	    colour := escapeTest(cRe, cIm, 100, 4)
 	    canvas.SetRGB(colour, colour, colour)
 	    canvas.SetPixel(i, j)
 	}
@@ -58,9 +58,10 @@ func escapeTest(cRe, cIm float64, maxLoop int, threshhold float64) float64 {
     zIm := 0.0
     for i := 0; i < maxLoop; i++ {
 	zRe, zIm = zSquared(zRe, zIm, cRe, cIm)
+	if (math.Pow(zRe,2)+math.Pow(zIm,2)) > threshhold {
+	    return float64(i)/float64(maxLoop)
+	}
     }
-    if (math.Hypot(zRe, zIm)) < threshhold {
-	return 0.0
-    }
-    return 1.0
+    //fmt.Println(math.Hypot(zRe, zIm))
+    return 0.0
 }

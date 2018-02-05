@@ -1,13 +1,13 @@
 package main
 
 //import "fmt"
-//import "math"
+import "math"
 import "github.com/fogleman/gg"
 
 func main() {
     //fmt.Println(complexFunction(2,3))
     size := 1000
-    canvas := gg.NewContext(size,size)
+    canvas := gg.NewContext(size, size)
     //canvas.DrawCircle(500,500,400)
     //canvas.SetRGB(0,0,0)
     //canvas.Fill()
@@ -30,9 +30,9 @@ func main() {
 	    // also need to be careful about how i and j grow across the canvas
 	    cRe := cReMin + float64(i)*reCanvasConversion
 	    cIm := cImMax - float64(j)*imCanvasConversion
-	    colour := escapeTest(cIm,cRe,20,0.1)
-	    canvas.SetRGB(colour,colour,colour)
-	    canvas.SetPixel(i,j)
+	    colour := escapeTest(cIm, cRe, 20, 0.1)
+	    canvas.SetRGB(colour, colour, colour)
+	    canvas.SetPixel(i, j)
 	}
     }
 
@@ -41,14 +41,14 @@ func main() {
 
 // zIm,a is the imaginary component, zRe,cRe is the real
 func zCubed(zIm, zRe, cIm, cRe float64) (float64, float64) {
-    zReNext := cRe - 3*zIm*zIm*zRe + zRe*zRe*zRe
-    zImNext := cIm - zIm*zIm*zIm + 3*zIm*zRe*zRe
+    zReNext := cRe - 3*math.Pow(zIm, 2)*zRe + math.Pow(zRe, 3)
+    zImNext := cIm - math.Pow(zIm, 3) + 3*zIm*math.Pow(zRe, 2)
     return zImNext, zReNext
 }
 
 // zIm,cIm is the imaginary component, zRe,cRe is the real
 func zSquared(zIm, zRe, cIm, cRe float64) (float64, float64) {
-    zReNext := cRe - zIm*zIm + zRe*zRe
+    zReNext := cRe - math.Pow(zIm, 2) + math.Pow(zRe, 2)
     zImNext := cIm + 2*zIm*zRe 
     return zImNext, zReNext
 }
@@ -59,7 +59,7 @@ func escapeTest(cIm, cRe float64, maxLoop int, threshhold float64) float64 {
     for i := 0; i < maxLoop; i++ {
 	zIm, zRe = zSquared(zIm, zRe, cIm, cRe)
     }
-    if (zIm*zIm + zRe*zRe) < threshhold {
+    if (math.Hypot(zIm, zRe)) < threshhold {
 	return 0.0
     }
     return 1.0

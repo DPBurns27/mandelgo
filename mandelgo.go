@@ -6,7 +6,7 @@ import "github.com/fogleman/gg"
 
 func main() {
     fmt.Println("Running...")
-    size := 1000
+    size := 4000
     canvas := gg.NewContext(size, size)
     //canvas.DrawCircle(500,500,400)
     //canvas.SetRGB(0,0,0)

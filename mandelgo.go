@@ -3,46 +3,66 @@ package main
 import "fmt"
 import "math"
 import "github.com/fogleman/gg"
+//import "sync"
 
 func main() {
     fmt.Println("Running...")
-    frames := 10
+    frames := 1
     zoomFactor := 0.5
-    zoomRe := 0.25
-    zoomIm := 0.0
-    size := 500
+    focalPointRe := 0.0
+    focalPointIm := 1.0
+    size := 1000
+    escapeLoops := 100
+    threshhold := 4.0
     canvas := gg.NewContext(size, size)
     //canvas.DrawCircle(500,500,400)
     //canvas.SetRGB(0,0,0)
     //canvas.Fill()
-
-    for k := 0; k < frames; k++ {
-        // work out conversion factors for going from the canvas position to the actual imaginary and 
-        // real axis values you want
-        // cIm is imaginary, cRe is real
-        cReMin := -3.0*math.Pow(zoomFactor,float64(k)) 
-        cReMax := 1.0*math.Pow(zoomFactor,float64(k))
-        cImMin := -2.0*math.Pow(zoomFactor,float64(k)) 
-        cImMax := 2.0*math.Pow(zoomFactor,float64(k)) 
-        reCanvasConversion := (cReMax - cReMin)/float64(size)
-        imCanvasConversion := (cImMax - cImMin)/float64(size)
     
+    for k := 0; k < frames; k++ {
+	// how the size of the window changes each time it zooms in
+	windowSize := 4.0*math.Pow(zoomFactor,float64(k))
+    
+	complexDomainRe, complexDomainIm := complexDomain(windowSize, focalPointRe, focalPointIm, size)
+
         // i dont know if i is the horizontal or vertical axis
         // Loop the canvas
         for i := 0; i < size; i++ {
-    	cRe := cReMin + float64(i)*reCanvasConversion
-    	for j := 0; j < size; j++ {
-    	    // find the complex representation of the canvas position
-    	    // also need to be careful about how i and j grow across the canvas
-    	    cIm := cImMax - float64(j)*imCanvasConversion
-    	    colour := escapeTest(cRe, cIm, 100, 4)
-    	    canvas.SetRGB(colour, colour, colour)
-    	    canvas.SetPixel(i, j)
-    	}
+	    for j := 0; j < size; j++ {
+		// find the complex representation of the canvas position
+	    	// also need to be careful about how i and j grow across the canvas
+	    	colour := escapeTest(complexDomainRe[i], complexDomainIm[j], escapeLoops, threshhold)
+	    	canvas.SetRGB(colour, colour, colour)
+	    	canvas.SetPixel(i, j)
+	    }
         }
-	filename := fmt.Sprintf("out/out%d.png", k) 
+
+	filename := fmt.Sprintf("/Users/David/go/src/github.com/DPBurns27/mandelgo/out/out%d.png", k)
+	fmt.Println("Writing file:", filename)
         canvas.SavePNG(filename)
     }
+}
+
+// Work out the conversion factors for moving from the pixel positions to the imaginary and real domain values
+// TODO: generate arrays using the size of the canvas 
+func complexDomain(windowSize, focalPointRe, focalPointIm float64, size int) ([]float64, []float64) {
+	cReMin := focalPointRe - windowSize/2
+	cReMax := focalPointRe + windowSize/2
+	cImMin := focalPointIm - windowSize/2
+	cImMax := focalPointIm + windowSize/2
+
+        canvasConversionRe := (cReMax - cReMin)/float64(size)
+        canvasConversionIm := (cImMax - cImMin)/float64(size)
+
+	complexDomainRe := make([]float64, size)
+	complexDomainIm := make([]float64, size)
+
+	for i := 0; i < size; i++ {
+	    complexDomainRe[i] = cReMin + float64(i)*canvasConversionRe
+	    complexDomainIm[i] = cImMax - float64(i)*canvasConversionIm
+	}
+
+	return complexDomainRe, complexDomainIm
 }
 
 // zIm,a is the imaginary component, zRe,cRe is the real
@@ -71,3 +91,7 @@ func escapeTest(cRe, cIm float64, maxLoop int, threshhold float64) float64 {
     //fmt.Println(math.Hypot(zRe, zIm))
     return 0.0
 }
+
+//func makeMovie(file string) {
+    //cmd := exec.Command("ffmpeg -r 25 -i %04d.bmp -f mp4 -c:v libx264 -preset ultrafast -qp 0 -pix_fmt yuv420p output3.mp4")
+//}
